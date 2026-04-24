@@ -1,0 +1,259 @@
+{
+  "name": "webhook workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "google-form-response",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b6300d02-06d8-4358-a1df-cc3a5e3a393b",
+      "name": "Webhook",
+      "webhookId": "c77189e9-4b3d-424b-8b3d-fb6a635885b5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyAJ-aNpuQvQxDXaK7JW1G6xaz8Ryq_ClgI",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Tum ek professional customer support agent ho. Is form submission ka helpful reply banao:\\n\\nName: {{ $('Webhook').item.json.name }}\\nEmail: {{ $('Webhook').item.json.email }}\\nContact: {{ $('Webhook').item.json.contact }}\\nMessage: {{ $('Webhook').item.json.message }}\\n\\nReply short aur polite rakho.\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "772ff43b-2783-4294-b9f4-88c441c1ad94",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10q4AvbX6TgRsA4xdtcMVF473xMy2IIHdEq8ZAYotUKw",
+          "mode": "list",
+          "cachedResultName": "Client Enquiry Responses ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10q4AvbX6TgRsA4xdtcMVF473xMy2IIHdEq8ZAYotUKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10q4AvbX6TgRsA4xdtcMVF473xMy2IIHdEq8ZAYotUKw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('Webhook').item.json.body.timestamp }}",
+            "Name": "={{ $('Webhook').item.json.body.name }}",
+            "Email": "={{ $('Webhook').item.json.body.email }}",
+            "Contact": "={{ $('Webhook').item.json.body.contact }}",
+            "Message": "={{ $('Webhook').item.json.body.message }}",
+            "AI Reply": "={{ $('HTTP Request').item.json.candidates[0].content.parts[0].text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contact",
+              "displayName": "Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Reply",
+              "displayName": "AI Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "a7125a14-d739-43e3-b383-f7e709ea8a44",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jHc5v0lpyYociI0L",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5989739912",
+        "text": "=🔔 New Client Enquiry!\n\n👤 Name: {{ $('Webhook').item.json.body.name }}\n📧 Email: {{ $('Webhook').item.json.body.email }}\n📞 Contact: {{ $('Webhook').item.json.body.contact }}\n💬 Message: {{ $('Webhook').item.json.body.message }}\n\n🤖 AI Reply:\n{{ $('HTTP Request').item.json.candidates[0].content.parts[0].text }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "2d6f2ea9-6f29-41ab-8d6f-d21d964be07d",
+      "name": "Send a text message",
+      "webhookId": "14d2a98a-b53e-477a-b973-5d66c86bcce2",
+      "credentials": {
+        "telegramApi": {
+          "id": "cBGBuBFjuGBMuEsw",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "sony-123.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (compatible; Google-Apps-Script; beanserver; +https://script.google.com; id: UAEmdDd8EvIji3DiceUxM9LMOKXoshG5K3g)",
+            "content-length": "130",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "107.178.193.69",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9f10cb1aed9f529d-ATL",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "107.178.193.69, 108.162.237.162",
+            "x-forwarded-host": "sony-123.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-122-69574fb4db-5r7qr",
+            "x-is-trusted": "yes",
+            "x-real-ip": "107.178.193.69"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "timestamp": "2026-04-23T23:54:25.882Z",
+            "name": "asagsdfsf",
+            "email": "dfggf@gmail.com",
+            "contact": "123456321",
+            "message": "fgfjhgbngh"
+          },
+          "webhookUrl": "https://sony-123.app.n8n.cloud/webhook/google-form-response",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "74584109-1d41-468a-99de-07047942d126",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "67afbc169a1b11c36a7d0370c4ec03452e4dd2dd17560a4596d225c63ecc87cb"
+  },
+  "id": "1cLui3PxcGkFrHPK",
+  "tags": []
+}
